@@ -3,12 +3,12 @@ using LibraryDesk.Core;
 
 Console.OutputEncoding = Encoding.UTF8;
 
-var issue = new vidacha("A-1001", "Іваненко");
+var issue = new BookIssue("A-1001", "Іваненко");
 
-issue.Add("Примірник SKU-1", 3);
-issue.Add("Примірник SKU-2", 12);
+issue.AddCopy("Примірник SKU-1", 3);
+issue.AddCopy("Примірник SKU-2", 12);
 
-Console.WriteLine(issue.ProcessData());
-Console.WriteLine(issue.Ck());
-Console.WriteLine(issue.Chg(1));
-Console.Write(issue.Rep());
+Console.WriteLine(issue.CalculateTotalCopies());
+Console.WriteLine(issue.IsValid());
+Console.WriteLine(issue.TryChangeStatus(1));
+Console.Write(issue.BuildReport());
