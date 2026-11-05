@@ -30,6 +30,14 @@ public class BookIssue
         return null;
     }
 
+    private const int _statusNew = 0;
+    private const int _statusActive = 1;
+    private const int _statusPartiallyReturned = 2;
+    private const int _statusCancelled = 3;
+
+    private const int _minReaderNameLength = 2;
+    private const int _maxCopyLines = 100;
+
     private readonly List<string[]> _copies = new List<string[]>();
 
     /// <summary>
@@ -61,7 +69,7 @@ public class BookIssue
     {
         Id = issueId;
         ReaderName = readerName;
-        Status = 0;
+        Status = _statusNew;
         CreatedAt = DateTime.Now;
     }
 
@@ -113,21 +121,21 @@ public class BookIssue
     /// <returns>True if the status was changed successfully; otherwise, false.</returns>
     public bool TryChangeStatus(int newStatus)
     {
-        if (Status == 0 && newStatus == 1)
+        if (Status == _statusNew && newStatus == _statusActive)
         {
-            Status = 1;
+            Status = _statusActive;
             return true;
         }
 
-        if (Status == 1 && newStatus == 2)
+        if (Status == _statusActive && newStatus == _statusPartiallyReturned)
         {
-            Status = 2;
+            Status = _statusPartiallyReturned;
             return true;
         }
 
-        if (Status == 0 && newStatus == 3)
+        if (Status == _statusNew && newStatus == _statusCancelled)
         {
-            Status = 3;
+            Status = _statusCancelled;
             return true;
         }
 
@@ -141,12 +149,10 @@ public class BookIssue
     public bool IsValid()
     {
         if (!string.IsNullOrEmpty(Id)
-            && ReaderName != null
-            && ReaderName.Length > 2
-            && _copies.Count > 0
-            && _copies.Count < 100
-            && Status >= 0
-            && Status <= 3)
+            && ReaderName.Length > _minReaderNameLength
+            && _copies.Count < _maxCopyLines
+            && Status >= _statusNew
+            && Status <= _statusCancelled)
         {
             return true;
         }
