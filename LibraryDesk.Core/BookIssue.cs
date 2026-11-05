@@ -1,154 +1,154 @@
 using System;
 using System.Collections.Generic;
 
-namespace LibraryDesk.Core
+namespace LibraryDesk.Core;
+
+/// <summary>
+/// Представляє видачу книг читачеві.
+/// </summary>
+public class BookIssue
 {
+    private readonly List<string[]> _copies = new List<string[]>();
+
+    public string Id { get; private set; }
+
+    public string ReaderName { get; private set; }
+
+    public int Status { get; private set; }
+
+    public DateTime CreatedAt { get; private set; }
+
     /// <summary>
-    /// Представляє видачу книг читачеві.
+    /// Створює нову видачу книг.
     /// </summary>
-    public class BookIssue
+    public BookIssue(string issueId, string readerName)
     {
-        private readonly List<string[]> _copies = new List<string[]>();
+        Id = issueId;
+        ReaderName = readerName;
+        Status = 0;
+        CreatedAt = DateTime.Now;
+    }
 
-        public string Id { get; private set; }
+    /// <summary>
+    /// Додає примірник до видачі.
+    /// </summary>
+    public void AddCopy(string copyId, int quantity)
+    {
+        string[] copyEntry = new string[2];
+        copyEntry[0] = copyId;
+        copyEntry[1] = quantity.ToString();
 
-        public string ReaderName { get; private set; }
+        _copies.Add(copyEntry);
+    }
 
-        public int Status { get; private set; }
+    /// <summary>
+    /// Обчислює загальну кількість примірників.
+    /// </summary>
+    public int CalculateTotalCopies()
+    {
+        int totalCopies = 0;
+        int lineCount = 0;
 
-        public DateTime CreatedAt { get; private set; }
-
-        /// <summary>
-        /// Створює нову видачу книг.
-        /// </summary>
-        public BookIssue(string issueId, string readerName)
+        for (int index = 0; index < _copies.Count; index++)
         {
-            Id = issueId;
-            ReaderName = readerName;
-            Status = 0;
-            CreatedAt = DateTime.Now;
+            int quantity = int.Parse(_copies[index][1]);
+
+            totalCopies = totalCopies + quantity;
+            lineCount = lineCount + 1;
         }
 
-        /// <summary>
-        /// Додає примірник до видачі.
-        /// </summary>
-        public void AddCopy(string copyId, int quantity)
+        if (totalCopies < 0)
         {
-            string[] copyEntry = new string[2];
-            copyEntry[0] = copyId;
-            copyEntry[1] = quantity.ToString();
-
-            _copies.Add(copyEntry);
+            totalCopies = 0;
         }
 
-        /// <summary>
-        /// Обчислює загальну кількість примірників.
-        /// </summary>
-        public int CalculateTotalCopies()
+        return totalCopies;
+    }
+
+    /// <summary>
+    /// Змінює статус видачі відповідно до дозволених
+    /// переходів.
+    /// </summary>
+    public bool TryChangeStatus(int newStatus)
+    {
+        if (Status == 0 && newStatus == 1)
         {
-            int totalCopies = 0;
-            int lineCount = 0;
-
-            for (int index = 0; index < _copies.Count; index++)
-            {
-                int quantity = int.Parse(_copies[index][1]);
-
-                totalCopies = totalCopies + quantity;
-                lineCount = lineCount + 1;
-            }
-
-            if (totalCopies < 0)
-            {
-                totalCopies = 0;
-            }
-
-            return totalCopies;
+            Status = 1;
+            return true;
         }
 
-        /// <summary>
-        /// Змінює статус видачі відповідно до дозволених переходів.
-        /// </summary>
-        public bool TryChangeStatus(int newStatus)
+        if (Status == 1 && newStatus == 2)
         {
-            if (Status == 0 && newStatus == 1)
-            {
-                Status = 1;
-                return true;
-            }
-
-            if (Status == 1 && newStatus == 2)
-            {
-                Status = 2;
-                return true;
-            }
-
-            if (Status == 0 && newStatus == 3)
-            {
-                Status = 3;
-                return true;
-            }
-
-            return false;
+            Status = 2;
+            return true;
         }
 
-        /// <summary>
-        /// Перевіряє коректність даних видачі.
-        /// </summary>
-        public bool IsValid()
+        if (Status == 0 && newStatus == 3)
         {
-            if (!string.IsNullOrEmpty(Id)
-                && ReaderName != null
-                && ReaderName.Length > 2
-                && _copies.Count > 0
-                && _copies.Count < 100
-                && Status >= 0
-                && Status <= 3)
-            {
-                return true;
-            }
-
-            return false;
+            Status = 3;
+            return true;
         }
 
-        /// <summary>
-        /// Формує текстовий звіт про видачу.
-        /// </summary>
-        public string BuildReport()
+        return false;
+    }
+
+    /// <summary>
+    /// Перевіряє коректність даних видачі.
+    /// </summary>
+    public bool IsValid()
+    {
+        if (!string.IsNullOrEmpty(Id)
+            && ReaderName != null
+            && ReaderName.Length > 2
+            && _copies.Count > 0
+            && _copies.Count < 100
+            && Status >= 0
+            && Status <= 3)
         {
-            string report = string.Empty;
+            return true;
+        }
 
-            for (int index = 0; index < _copies.Count; index++)
-            {
-                report = report
-                    + "Примірник: " + _copies[index][0]
-                    + "; кількість: " + _copies[index][1]
-                    + "\n";
-            }
+        return false;
+    }
 
+    /// <summary>
+    /// Формує текстовий звіт про видачу.
+    /// </summary>
+    public string BuildReport()
+    {
+        string report = string.Empty;
+
+        for (int index = 0; index < _copies.Count; index++)
+        {
             report = report
-                + "Загальна кількість виданих примірників: "
-                + CalculateTotalCopies()
+                + "Примірник: " + _copies[index][0]
+                + "; кількість: " + _copies[index][1]
                 + "\n";
-
-            return report;
         }
 
-        /// <summary>
-        /// Знаходить видачу за її ідентифікатором.
-        /// </summary>
-        public static BookIssue? FindById(
-            List<BookIssue> issues,
-            string issueId)
+        report = report
+            + "Загальна кількість виданих примірників: "
+            + CalculateTotalCopies()
+            + "\n";
+
+        return report;
+    }
+
+    /// <summary>
+    /// Знаходить видачу за її ідентифікатором.
+    /// </summary>
+    public static BookIssue? FindById(
+        List<BookIssue> issues,
+        string issueId)
+    {
+        for (int index = 0; index < issues.Count; index++)
         {
-            for (int index = 0; index < issues.Count; index++)
+            if (issues[index].Id == issueId)
             {
-                if (issues[index].Id == issueId)
-                {
-                    return issues[index];
-                }
+                return issues[index];
             }
-
-            return null;
         }
+
+        return null;
     }
 }
